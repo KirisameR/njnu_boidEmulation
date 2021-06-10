@@ -1,13 +1,14 @@
+
 from pygame import *
 from pygame.sprite import *
-
 from random import *
 import math
+
 Vector2 = pygame.math.Vector2
 
-
-SWARM_SIZE = 40
-ENEMY_SIZE = 1
+RESOLUTION = [600, 600]
+SWARM_SIZE = 4
+ENEMY_SIZE = 0
 MAX_SPEED = 4
 neighbor_distance = 250
 boid0 = Group()
@@ -19,32 +20,32 @@ clock = pygame.time.Clock()
 class Emulation:
     def __init__(self):
         pygame.display.set_caption("Swarm Emulation")
-        self.screen = pygame.display.set_mode([1280, 600], pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode(RESOLUTION, pygame.DOUBLEBUF)
         self.clock = pygame.time.Clock()
-        # self.myfont = pygame.font.SysFont("newyork", 15)  # 定义用于显示帧速率的字体
         self.scene = []
         self.bgcolor = (230, 230, 230)
-        self.boids = Group()
+        self.group_agents = []
+
+    def initGroup(self):
+        for i in range(SWARM_SIZE):
+            boid0.add(Boid_0(self.screen))
+        # for i in range(SWARM_SIZE):
+        #     boid1.add(Boid_1(self.screen))
+        for i in range(ENEMY_SIZE):
+            enemies.add(Enemy(self.screen))
+        self.group_agents = [boid0, boid1, enemies]
+        pygame.init()
 
     def run(self):
         """定义刷新函数"""
-        pygame.init()
 
-        for i in range(SWARM_SIZE):
-            boid0.add(Boid_0(self.screen))
-        for i in range(SWARM_SIZE):
-            boid1.add(Boid_1(self.screen))
-        for i in range(ENEMY_SIZE):
-            enemies.add(Enemy(self.screen))
+        self.initGroup()
 
         while True:
             self.screen.fill(self.bgcolor)
-            for boid in boid0:
-                boid.update()
-            for boid in boid1:
-                boid.update()
-            for enemy in enemies:
-                enemy.update()
+            for agents in self.group_agents:
+                for agent in agents:
+                    agent.update()
             pygame.display.flip()
             clock.tick(60)
 
@@ -55,49 +56,65 @@ class Boid_0(Sprite):
         super(Boid_0, self).__init__()
         self.screen = screen
         self.img = pygame.image.load("./Enemy_FishGreen.png").convert_alpha()
+        self.position = Vector2(uniform(0, RESOLUTION[0]), uniform(0, RESOLUTION[1]))
         self.rect = self.img.get_rect()
-        self.position = Vector2(uniform(0, 1280), uniform(0, 600))
         a = uniform(0, math.pi * 2)
         self.v = Vector2(math.cos(a), math.sin(a))
         self.neighbors = Group()
         self.competitors = Group()
         self.enemies = Group()
+        self.angle = 0
+
 
     def update(self):
         self.neighbors = [b for b in boid0 if b != self and pygame.math.Vector2.length(b.position - self.position) < neighbor_distance]
         self.competitors = [c for c in boid1 if pygame.math.Vector2.length(c.position - self.position) < neighbor_distance]
         self.enemies = [e for e in enemies if pygame.math.Vector2.length(e.position - self.position) < neighbor_distance]
 
-        self.rule1(self.neighbors)
-        self.rule2(self.neighbors)
-        self.rule3(self.neighbors)
-        self.rule4(self.competitors)
-        self.rule5(self.enemies)
+
+        # self.rule1(self.neighbors)
+        # self.rule2(self.neighbors)
+        # self.rule3(self.neighbors)
+        # self.rule4(self.competitors)
+        # self.rule5(self.enemies)
         self.rule_bound()
+
+        # speed ctrl
         if pygame.math.Vector2.length(self.v) > MAX_SPEED:
             self.v /= pygame.math.Vector2.length(self.v)
-        a = uniform(0, math.pi * 2)
-        self.position += self.v * MAX_SPEED + 0.002 * Vector2(math.cos(a), math.sin(a))
-        self.rule_inner()
+
+        # a = uniform(0, math.pi * 2)
+        delta = self.v * MAX_SPEED # + 0.002 * Vector2(math.cos(a), math.sin(a))
+        self.position += delta
+        # self.rule_inner()
+
         # eating
         for e in enemies:
             if pygame.math.Vector2.length(self.position - e.position) < 30:
                 boid0.remove(self)
 
-        self.screen.blit(self.img, self.position)
+        self.angle = math.atan((delta[1]) / (delta[0] + 0.000000000000001))
+        print(self.angle)
+        new_img = pygame.transform.rotate(self.img, self.angle)
+        newRect = new_img.get_rect(center=self.position)
+
+
+        # self.screen.blit(new_img, self.position)
+        self.screen.blit(new_img, newRect)
 
     def rule_bound(self):
         # Stay within screen bounds
         v = Vector2()
         if self.position[0] < 0:
             v[0] = 1
-        if self.position[0] >= 1240:
+        if self.position[0] >= RESOLUTION[0]-40:
             v[0] = -1
         if self.position[1] < 0:
             v[1] = 1
-        if self.position[1] >= 560:
+        if self.position[1] >= RESOLUTION[1]-40:
             v[1] = -1
         self.v += v * 0.5
+
 
     def rule1(self, myneighbors):
         # Move to 'center of mass' of neighbors
@@ -150,13 +167,15 @@ class Boid_0(Sprite):
     def rule_inner(self):
         if self.position.x < 0:
             self.position.x = 0
-        elif self.position.x > 1240:
-            self.position.x = 1240
+        elif self.position.x > RESOLUTION[0]-40:
+            self.position.x = RESOLUTION[0]-40
 
         if self.position.y < 0:
             self.position.y = 0
-        elif self.position.y > 560:
-            self.position.y = 560
+        elif self.position.y > RESOLUTION[1]-40:
+            self.position.y = RESOLUTION[1]-40
+
+
 
 
 class Boid_1(Sprite):
@@ -165,7 +184,7 @@ class Boid_1(Sprite):
         self.screen = screen
         self.img = pygame.image.load("./Enemy_FishPink.png").convert_alpha()
         self.rect = self.img.get_rect()
-        self.position = Vector2(uniform(0, 1280), uniform(0, 600))
+        self.position = Vector2(uniform(0, RESOLUTION[0]), uniform(0, RESOLUTION[1]))
         a = uniform(0, math.pi * 2)
         self.v = Vector2(math.cos(a), math.sin(a))
 
@@ -199,11 +218,11 @@ class Boid_1(Sprite):
         v = Vector2()
         if self.position[0] < 0:
             v[0] = 1
-        if self.position[0] >= 1240:
+        if self.position[0] >= RESOLUTION[0]-40:
             v[0] = -1
         if self.position[1] < 0:
             v[1] = 1
-        if self.position[1] >= 560:
+        if self.position[1] >= RESOLUTION[1]-40:
             v[1] = -1
         self.v += v * 0.5
 
@@ -259,13 +278,13 @@ class Boid_1(Sprite):
     def rule_inner(self):
         if self.position.x < 0:
             self.position.x = 0
-        elif self.position.x > 1240:
-            self.position.x = 1240
+        elif self.position.x > RESOLUTION[0]-40:
+            self.position.x = RESOLUTION[0]-40
 
         if self.position.y < 0:
             self.position.y = 0
-        elif self.position.y > 560:
-            self.position.y = 560
+        elif self.position.y > RESOLUTION[1]-40:
+            self.position.y = RESOLUTION[1]-40
 
 
 class Enemy(Sprite):
@@ -274,11 +293,12 @@ class Enemy(Sprite):
         self.screen = screen
         self.img = pygame.image.load("./Enemy_FishBlue.png").convert_alpha()
         self.rect = self.img.get_rect()
-        self.position = Vector2(uniform(0, 1280), uniform(0, 600))
+        self.position = Vector2(uniform(0, RESOLUTION[0]), uniform(0, RESOLUTION[1]))
         a = uniform(0, math.pi * 2)
         self.v = Vector2(math.cos(a), math.sin(a))
         self.preys_0 = Group()
         self.preys_1 = Group()
+
 
     def update(self):
         self.preys_0 = [b for b in boid1 if pygame.math.Vector2.length(b.position - self.position) < neighbor_distance]
@@ -298,11 +318,11 @@ class Enemy(Sprite):
         v = Vector2()
         if self.position[0] < 0:
             v[0] = 1
-        if self.position[0] >= 1240:
+        if self.position[0] >= RESOLUTION[0]-40:
             v[0] = -1
         if self.position[1] < 0:
             v[1] = 1
-        if self.position[1] >= 560:
+        if self.position[1] >= RESOLUTION[1]-40:
             v[1] = -1
         self.v += v * 0.5
 
@@ -316,20 +336,19 @@ class Enemy(Sprite):
             v.y = randrange(0, 1)
             self.v += v * 0.03
         else:
-            minimum = 114514
+            min = 114514
             for prey in self.preys_0:
-                if pygame.math.Vector2.length(prey.position - self.position) < minimum:
-                    minimum = pygame.math.Vector2.length(prey.position - self.position)
+                if pygame.math.Vector2.length(prey.position - self.position) < min:
+                    min = pygame.math.Vector2.length(prey.position - self.position)
                     v_0 = prey.position
 
-            minimum = 114514
+            min = 114514
             for prey in self.preys_1:
-                if pygame.math.Vector2.length(prey.position - self.position) < minimum:
-                    minimum = pygame.math.Vector2.length(prey.position - self.position)
+                if pygame.math.Vector2.length(prey.position - self.position) < min:
+                    min = pygame.math.Vector2.length(prey.position - self.position)
                     v_1 = prey.position
             v = self.position - (v_0 + v_1)
             self.v += -v * 0.0005
-
 
 if __name__ == '__main__':
     emu = Emulation()
