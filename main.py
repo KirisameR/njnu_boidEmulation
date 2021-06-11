@@ -4,13 +4,17 @@ from pygame.sprite import *
 from random import *
 import math
 
+
 Vector2 = pygame.math.Vector2
 
-RESOLUTION = [600, 600]
-SWARM_SIZE = 4
-ENEMY_SIZE = 0
-MAX_SPEED = 4
-neighbor_distance = 250
+RESOLUTION = [1280, 720]
+SWARM_SIZE = 40
+ENEMY_SIZE = 1
+MAX_SPEED = 6
+MAX_SPEED_ENEM = 6
+MAX_ACC_BOID = 0.9
+MAX_ACC_ENEM = 5
+neighbor_distance = 450
 boid0 = Group()
 boid1 = Group()
 enemies = Group()
@@ -31,8 +35,8 @@ class Emulation:
             boid0.add(Boid_0(self.screen))
         # for i in range(SWARM_SIZE):
         #     boid1.add(Boid_1(self.screen))
-        for i in range(ENEMY_SIZE):
-            enemies.add(Enemy(self.screen))
+        # for i in range(ENEMY_SIZE):
+        #     enemies.add(Enemy(self.screen))
         self.group_agents = [boid0, boid1, enemies]
         pygame.init()
 
@@ -60,61 +64,69 @@ class Boid_0(Sprite):
         self.rect = self.img.get_rect()
         a = uniform(0, math.pi * 2)
         self.v = Vector2(math.cos(a), math.sin(a))
+        self.a = 0
         self.neighbors = Group()
         self.competitors = Group()
         self.enemies = Group()
         self.angle = 0
 
-
     def update(self):
+        neighbor_distance = 720/3
+        enemies_distance = 720/2
         self.neighbors = [b for b in boid0 if b != self and pygame.math.Vector2.length(b.position - self.position) < neighbor_distance]
         self.competitors = [c for c in boid1 if pygame.math.Vector2.length(c.position - self.position) < neighbor_distance]
-        self.enemies = [e for e in enemies if pygame.math.Vector2.length(e.position - self.position) < neighbor_distance]
+        self.enemies = [e for e in enemies if pygame.math.Vector2.length(e.position - self.position) < enemies_distance]
 
-
-        # self.rule1(self.neighbors)
-        # self.rule2(self.neighbors)
-        # self.rule3(self.neighbors)
-        # self.rule4(self.competitors)
-        # self.rule5(self.enemies)
+        if not (len(self.enemies)):
+            self.rule1(self.neighbors)
+            self.rule2(self.neighbors)
+            self.rule3(self.neighbors)
+            # self.rule4(self.competitors)
+        if (len(self.enemies)):
+            self.rule5(self.enemies)
         self.rule_bound()
 
         # speed ctrl
         if pygame.math.Vector2.length(self.v) > MAX_SPEED:
             self.v /= pygame.math.Vector2.length(self.v)
-
-        # a = uniform(0, math.pi * 2)
-        delta = self.v * MAX_SPEED # + 0.002 * Vector2(math.cos(a), math.sin(a))
-        self.position += delta
-        # self.rule_inner()
+        # acceleration ctrl
+        delta = self.v
+        abs_delta =pygame.math.Vector2.length(delta)
+        dir = delta/abs_delta
+        if abs(abs_delta-self.a) <= MAX_ACC_BOID:
+            abs_v = abs_delta
+        else:
+            abs_v = MAX_ACC_BOID
+        self.a = abs_v
+        self.position += dir * abs_v
 
         # eating
         for e in enemies:
             if pygame.math.Vector2.length(self.position - e.position) < 30:
                 boid0.remove(self)
 
-        self.angle = math.atan((delta[1]) / (delta[0] + 0.000000000000001))
-        print(self.angle)
-        new_img = pygame.transform.rotate(self.img, self.angle)
-        newRect = new_img.get_rect(center=self.position)
+        # rotate sprite
+        self.angle = - 180/3.14 * math.atan2(delta[1], delta[0]) + 180
 
-
-        # self.screen.blit(new_img, self.position)
-        self.screen.blit(new_img, newRect)
+        # render to screen
+        self.screen.blit(pygame.transform.rotate(self.img, self.angle), pygame.transform.rotate(self.img, self.angle).get_rect(center=self.position))
 
     def rule_bound(self):
         # Stay within screen bounds
         v = Vector2()
         if self.position[0] < 0:
+            self.position[0] = 0
             v[0] = 1
         if self.position[0] >= RESOLUTION[0]-40:
+            self.position[0] = RESOLUTION[0]-40
             v[0] = -1
         if self.position[1] < 0:
+            self.position[1] = 0
             v[1] = 1
         if self.position[1] >= RESOLUTION[1]-40:
+            self.position[1] = RESOLUTION[1] - 40
             v[1] = -1
-        self.v += v * 0.5
-
+        self.v += v * 0.3
 
     def rule1(self, myneighbors):
         # Move to 'center of mass' of neighbors
@@ -136,9 +148,9 @@ class Boid_0(Sprite):
             return Vector2(0, 0)
         c = Vector2()
         for n in myneighbors:
-            if pygame.math.Vector2.length(n.position - self.position) < 30:
+            if abs(pygame.math.Vector2.length(n.position - self.position)) < 30:
                 c += (self.position - n.position)
-        self.v += c * 0.01
+        self.v += c * 0.02
 
     def rule3(self, myneighbors):
         # Match velocity of neighbors
@@ -155,27 +167,13 @@ class Boid_0(Sprite):
 
     def rule5(self, myenemies):
         # escape from enemies
-        v = Vector2()
+
+        v = Vector2(0, 0)
         if len(myenemies):
             for e in myenemies:
-                v += e.v
+                v += e.position
             m = v / len(myenemies)
-            self.v += -(m - self.position) * 0.0001 - 0.01 * randrange(0, 1) * Vector2(m.y, -m.x) - 0.01 * randrange(0, 1) * Vector2(-m.y, m.x)
-        else:
-            pass
-
-    def rule_inner(self):
-        if self.position.x < 0:
-            self.position.x = 0
-        elif self.position.x > RESOLUTION[0]-40:
-            self.position.x = RESOLUTION[0]-40
-
-        if self.position.y < 0:
-            self.position.y = 0
-        elif self.position.y > RESOLUTION[1]-40:
-            self.position.y = RESOLUTION[1]-40
-
-
+            self.v += ((-m + self.position) * 0.007 + (Vector2(RESOLUTION[0]/2, RESOLUTION[1]/2)-self.position)*0.001)
 
 
 class Boid_1(Sprite):
@@ -298,7 +296,7 @@ class Enemy(Sprite):
         self.v = Vector2(math.cos(a), math.sin(a))
         self.preys_0 = Group()
         self.preys_1 = Group()
-
+        self.angle = 0
 
     def update(self):
         self.preys_0 = [b for b in boid1 if pygame.math.Vector2.length(b.position - self.position) < neighbor_distance]
@@ -309,9 +307,12 @@ class Enemy(Sprite):
 
         if pygame.math.Vector2.length(self.v) > MAX_SPEED:
             self.v /= pygame.math.Vector2.length(self.v)
-        self.position += self.v*MAX_SPEED/2
 
-        self.screen.blit(self.img, self.position)
+        delta = self.v
+        self.position += delta
+
+        self.angle = - 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180
+        self.screen.blit(pygame.transform.rotate(self.img, self.angle), pygame.transform.rotate(self.img, self.angle).get_rect(center=self.position))
 
     def rule_bound(self):
         # Stay within screen bounds
@@ -334,7 +335,7 @@ class Enemy(Sprite):
         if not self.preys_0 and not self.preys_1:
             v.x = randrange(0, 1)
             v.y = randrange(0, 1)
-            self.v += v * 0.03
+            self.v += v * 0.001
         else:
             min = 114514
             for prey in self.preys_0:
@@ -348,7 +349,12 @@ class Enemy(Sprite):
                     min = pygame.math.Vector2.length(prey.position - self.position)
                     v_1 = prey.position
             v = self.position - (v_0 + v_1)
-            self.v += -v * 0.0005
+            self.v += -v * 0.005
+
+    def rule_disperse(self):
+        if len(self.preys_0) >= 10:
+            pass
+
 
 if __name__ == '__main__':
     emu = Emulation()
