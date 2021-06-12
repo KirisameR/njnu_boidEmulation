@@ -20,10 +20,10 @@ class Boid_0(Sprite):
         Method 'rule_4': not implemented yet
         Method 'rule_5': an location-transition helper responsible for modeling the behavior that the boid tends to run away from the enemy
     """
-    def __init__(self, screen, property):
+    def __init__(self, screen, properties):
         super(Boid_0, self).__init__()
         self.screen = screen
-        self.property = property
+        self.property = properties
         self.img = pygame.image.load(self.property["SPRITE"]).convert_alpha()
         self.position = Vector2(uniform(0, self.property["RESOLUTION"][0]), uniform(0, self.property["RESOLUTION"][1]))
         self.rect = self.img.get_rect()
@@ -34,6 +34,8 @@ class Boid_0(Sprite):
         self.competitors = Group()
         self.enemies = Group()
         self.angle = 0
+        self.focus_point = [randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])]
+        self.cache = {}
 
     def update(self):
         """
@@ -60,7 +62,7 @@ class Boid_0(Sprite):
         # controlling the speed
         # make sure it will not exceed the maximum speed limit
         if pygame.math.Vector2.length(self.v) > self.property["MAX_SPEED"]:
-            self.v /= pygame.math.Vector2.length(self.v)
+            self.v /= pygame.math.Vector2.length(self.v) * self.property["MAX_SPEED"]
 
         # controlling the acceleration
         # make sure it will not exceed the maximum acceleration limit
@@ -70,7 +72,7 @@ class Boid_0(Sprite):
         if abs(abs_delta - self.a) <= self.property["MAX_ACC"]:  # check whether the acceleration exceeds the limit
             abs_v = abs_delta  # do nothing if it's fine
         else:
-            abs_v = self.property["MAX_ACC"]  # override the acceleration to maximum value (i.e. accelerate to the maximum speed) if it's too large
+            abs_v = self.property["MAX_SPEED"]  # override the acceleration to maximum value (i.e. accelerate to the maximum speed) if it's too large
         self.a = abs_v  # keep the current accelaration value for the next state
         self.position += direction * abs_v
 
@@ -82,11 +84,13 @@ class Boid_0(Sprite):
 
         # rotate the sprite image to its corresponding heading direction
         self.angle = - 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180
+        if not self.cache.__contains__(self.angle):     # cache the image if not found in self.cache to improve performance
+            self.cache.update({self.angle: pygame.transform.rotate(self.img, self.angle)})
 
         # finally, render the context to the screen
         # the second attribute is responsible for make sure the sprite rotate based on the correct center point. see:
         # https://www.cnblogs.com/yjmyzz/p/pygame-tutorial-9-image-rotate.html
-        self.screen.blit(pygame.transform.rotate(self.img, self.angle), pygame.transform.rotate(self.img, self.angle).get_rect(center=self.position))
+        self.screen.blit(self.cache[self.angle], self.cache[self.angle].get_rect(center=self.position))
 
     def rule_bound(self):
         """
@@ -174,4 +178,12 @@ class Boid_0(Sprite):
             for e in myenemies:
                 v += e.position
             m = v / len(myenemies)
-            self.v += ((-m + self.position)/pygame.math.Vector2.length(-m + self.position)*randrange(0, self.property["MAX_SPEED"]) + (Vector2(self.property["RESOLUTION"][0]/2, self.property["RESOLUTION"][1]/2)-self.position)*0.001)
+            self.v += (0.07*((-m + self.position)/pygame.math.Vector2.length(-m + self.position)))
+
+        # case: close to the dead corners
+        if (self.position[0] <= 50 or self.position[0] >= self.property["RESOLUTION"][0] - 50) and (self.position[1] <= 50 or self.position[1] >= self.property["RESOLUTION"][1] - 50):
+            if pygame.math.Vector2.length(self.position - self.focus_point) <= 100:
+                # pick a new point if so
+                self.focus_point = randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])
+            self.v += 0.05 * (Vector2(self.focus_point) - self.position)
+

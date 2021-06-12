@@ -49,7 +49,7 @@ enemy_property = {
     "SPRITE": "./Enemy_FishBlue.png",
     "GROUP_SIZE": 1,
     "MAX_SPEED": 6,
-    "MAX_ACC": 0.7,
+    "MAX_ACC": 2.9,
     "DETECT_DIST": 350,
     "PREYS": [globe.boid0, globe.boid1]
 }

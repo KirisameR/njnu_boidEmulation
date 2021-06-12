@@ -16,13 +16,13 @@ class Enemy(Sprite):
         Method 'rule_bound": an location-transition helper responsible for keeping the agent inside the screen border.
         Method 'rule_catch": an location-transition helper responsible for modeling the 'catch-and-hunt' behaviour.
     """
-    def __init__(self, screen, property):
+    def __init__(self, screen, properties):
         super(Enemy, self).__init__()
         self.screen = screen
-        self.property = property
+        self.property = properties
         self.img = pygame.image.load(self.property["SPRITE"]).convert_alpha()
         self.rect = self.img.get_rect()
-        self.position = Vector2(uniform(0, property["RESOLUTION"][0]), uniform(0, property["RESOLUTION"][1]))
+        self.position = Vector2(uniform(0, self.property["RESOLUTION"][0]), uniform(0, self.property["RESOLUTION"][1]))
         a = uniform(0, math.pi * 2)
         self.v = Vector2(math.cos(a), math.sin(a))
         self.a = 0
@@ -30,6 +30,7 @@ class Enemy(Sprite):
         self.killist = []
         self.angle = 0
         self.focus_point = [randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])]
+        self.cache = {}
 
     def update(self):
         """
@@ -47,7 +48,7 @@ class Enemy(Sprite):
         # controlling the speed
         # make sure it will not exceed the maximum speed limit
         if pygame.math.Vector2.length(self.v) > self.property["MAX_SPEED"]:
-            self.v /= pygame.math.Vector2.length(self.v)
+            self.v /= pygame.math.Vector2.length(self.v) * self.property["MAX_SPEED"]
 
         # controlling the acceleration
         # make sure it will not exceed the maximum acceleration limit
@@ -57,17 +58,19 @@ class Enemy(Sprite):
         if abs(abs_delta - self.a) <= self.property["MAX_ACC"]:     # check whether the acceleration exceeds the limit
             abs_v = abs_delta                           # do nothing if it's fine
         else:
-            abs_v = self.property["MAX_ACC"]            # override the acceleration to maximum value (i.e. accelerate to the maximum speed) if it's too large
+            abs_v = self.property["MAX_SPEED"]            # override the acceleration to maximum value (i.e. accelerate to the maximum speed) if it's too large
         self.a = abs_v                                  # keep the current accelaration value for the next state
         self.position += direction * abs_v
 
         # rotate the sprite image to its corresponding heading direction
         self.angle = - 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180
+        if not self.cache.__contains__(self.angle):  # cache the image if not found in self.cache to improve performance
+            self.cache.update({self.angle: pygame.transform.rotate(self.img, self.angle)})
 
         # finally, render the context to the screen
         # the second attribute is responsible for make sure the sprite rotate based on the correct center point. see:
         # https://www.cnblogs.com/yjmyzz/p/pygame-tutorial-9-image-rotate.html
-        self.screen.blit(pygame.transform.rotate(self.img, self.angle), pygame.transform.rotate(self.img, self.angle).get_rect(center=self.position))
+        self.screen.blit(self.cache[self.angle], self.cache[self.angle].get_rect(center=self.position))
 
     def rule_bound(self):
         """
@@ -112,13 +115,13 @@ class Enemy(Sprite):
                         nearest_prey = prey.position
 
         if nearest_prey:   # case1: prey found, head to the nearest prey and try to catch it
-            self.v += (nearest_prey - self.position) * 0.05
+            self.v += (nearest_prey - self.position)/pygame.math.Vector2.length(nearest_prey - self.position) * 0.04
         else:              # case0: no preys found, wander around
             # check whether the enemy has moved close to the old point
             if pygame.math.Vector2.length(self.position - self.focus_point) <= 100:
                 # pick a new point if so
                 self.focus_point = randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])
-            self.v += 5 * (Vector2(self.focus_point) - self.position)
+            self.v += 0.02 * (Vector2(self.focus_point) - self.position)
 
 
     # def rule_disperse(self):
