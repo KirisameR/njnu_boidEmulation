@@ -30,7 +30,6 @@ class Enemy(Sprite):
         self.killist = []
         self.angle = 0
         self.focus_point = [randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])]
-        self.cache = {}
 
     def update(self):
         """
@@ -64,13 +63,13 @@ class Enemy(Sprite):
 
         # rotate the sprite image to its corresponding heading direction
         self.angle = - 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180
-        if not self.cache.__contains__(self.angle):  # cache the image if not found in self.cache to improve performance
-            self.cache.update({self.angle: pygame.transform.rotate(self.img, self.angle)})
+        if not globe.cache[self.property["SPRITE"]].__contains__(self.angle):  # cache the image if not found in self.cache to improve performance
+            globe.cache[self.property["SPRITE"]].update({self.angle: pygame.transform.rotate(self.img, self.angle)})
 
         # finally, render the context to the screen
         # the second attribute is responsible for make sure the sprite rotate based on the correct center point. see:
         # https://www.cnblogs.com/yjmyzz/p/pygame-tutorial-9-image-rotate.html
-        self.screen.blit(self.cache[self.angle], self.cache[self.angle].get_rect(center=self.position))
+        self.screen.blit(globe.cache[self.property["SPRITE"]][self.angle], globe.cache[self.property["SPRITE"]][self.angle].get_rect(center=self.position))
 
     def rule_bound(self):
         """
@@ -122,7 +121,6 @@ class Enemy(Sprite):
                 # pick a new point if so
                 self.focus_point = randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])
             self.v += 0.02 * (Vector2(self.focus_point) - self.position)
-
 
     # def rule_disperse(self):
         # if len(self.preys_0) >= 10:

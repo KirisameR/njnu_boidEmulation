@@ -51,7 +51,7 @@ enemy_property = {
     "MAX_SPEED": 6,
     "MAX_ACC": 2.9,
     "DETECT_DIST": 350,
-    "PREYS": [globe.boid0, globe.boid1]
+    "PREYS": [globe.boid0, globe.boid1],
 }
 
 

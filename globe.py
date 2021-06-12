@@ -8,3 +8,4 @@ boid0 = Group()
 boid1 = Group()
 enemies = Group()
 killist = []
+cache = {"./Enemy_FishGreen.png": {}, "./Enemy_FishPink.png": {}, "./Enemy_FishBlue.png": {}}
