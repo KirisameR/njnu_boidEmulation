@@ -17,44 +17,6 @@ MAX_ACC_BOID = 0.9
 MAX_ACC_ENEM = 5
 
 
-# declare the main properties for ctrling the beaviour of the boids and enemies
-boid0_property = {
-    "RESOLUTION": RESOLUTION,
-    "SPRITE": "./Enemy_FishGreen.png",
-    "GROUP_SIZE": 40,
-    "MAX_SPEED": 6,
-    "MAX_ACC": 0.9,
-    "NEIGHBOR_DIST": 720/3,
-    "ENEMY_DIST": 720/2,
-    "COMPETITOR_DIST": 720/3,
-    "THIS_GROUP": globe.boid0,
-    "COMP_GROUP": [globe.boid1],
-    "ENEMY": [globe.enemies],
-}
-boid1_property = {
-    "RESOLUTION": RESOLUTION,
-    "SPRITE": "./Enemy_FishPink.png",
-    "GROUP_SIZE": 40,
-    "MAX_SPEED": 6,
-    "MAX_ACC": 0.9,
-    "NEIGHBOR_DIST": 720/3,
-    "ENEMY_DIST": 720/2,
-    "COMPETITOR_DIST": 720/3,
-    "THIS_GROUP": globe.boid1,
-    "COMP_GROUP": [globe.boid0],
-    "ENEMY": [globe.enemies],
-}
-enemy_property = {
-    "RESOLUTION": RESOLUTION,
-    "SPRITE": "./Enemy_FishBlue.png",
-    "GROUP_SIZE": 1,
-    "MAX_SPEED": 6,
-    "MAX_ACC": 2.9,
-    "DETECT_DIST": 350,
-    "PREYS": [globe.boid0, globe.boid1],
-}
-
-
 class Emulation:
     """
     DESCRIPTION:
@@ -78,12 +40,12 @@ class Emulation:
          responsible for initialize the boids and enemies sprite groups
         """
         # create boid group(s) and the enemy group
-        for i in range(boid0_property["GROUP_SIZE"]):
-            globe.boid0.add(Boid_0(self.screen, boid0_property))
-        for i in range(boid1_property["GROUP_SIZE"]):
-            globe.boid1.add(Boid_0(self.screen, boid1_property))
-        for i in range(enemy_property["GROUP_SIZE"]):
-            globe.enemies.add(Enemy(self.screen, enemy_property))
+        for i in range(globe.boid0_property["GROUP_SIZE"]):
+            globe.boid0.add(Boid_0(self.screen, globe.boid0_property))
+        for i in range(globe.boid1_property["GROUP_SIZE"]):
+            globe.boid1.add(Boid_0(self.screen, globe.boid1_property))
+        for i in range(globe.enemy_property["GROUP_SIZE"]):
+            globe.enemies.add(Enemy(self.screen, globe.enemy_property))
 
         self.group_agents = [globe.boid0, globe.boid1, globe.enemies]
         pygame.init()
@@ -105,7 +67,10 @@ class Emulation:
             pygame.display.flip()               # apply the changes and re-render the screen context
             self.clock.tick(60)                      # lock refresh rate to 60fps
 
+    @staticmethod
+    def activate():
+        emu = Emulation()  # initialize the Emulation object
+        emu.run()          # call its 'run' method to fire up the emulation process
 
-if __name__ == '__main__':
-    emu = Emulation()     # initialize the Emulation object
-    emu.run()             # call its 'run' method to fire up the emulation process
+
+Emulation.activate()
