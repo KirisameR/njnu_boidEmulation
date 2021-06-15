@@ -20,7 +20,7 @@ class Boid_0(Sprite):
         Method 'rule_4': not implemented yet
         Method 'rule_5': an location-transition helper responsible for modeling the behavior that the boid tends to run away from the enemy
     """
-    def __init__(self, screen, properties):
+    def __init__(self, screen, properties, flag):
         super(Boid_0, self).__init__()
         self.screen = screen
         self.property = properties
@@ -30,12 +30,13 @@ class Boid_0(Sprite):
         a = uniform(0, math.pi * 2)
         self.v = Vector2(math.cos(a), math.sin(a))
         self.a = 0
-        self.neighbors = Group()
-        self.competitors = Group()
-        self.enemies = Group()
+        self.neighbors = []
+        self.competitors = []
+        self.enemies = []
         self.angle = 0
         self.focus_point = [randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])]
         self.cache = {}
+        self.flag = flag
 
     def update(self):
         """
@@ -43,9 +44,10 @@ class Boid_0(Sprite):
         """
 
         # scan the neighbors, competitors and enemies in visual range respectively
-        self.neighbors = [b for b in self.property["THIS_GROUP"] if b != self and pygame.math.Vector2.length(b.position - self.position) < self.property["NEIGHBOR_DIST"]]
-        for comp in self.property["COMP_GROUP"]:
-            self.competitors = [c for c in comp if pygame.math.Vector2.length(c.position - self.position) < self.property["NEIGHBOR_DIST"]]
+        self.neighbors = [b for b in globe.boids[self.flag] if b != self and pygame.math.Vector2.length(b.position - self.position) < self.property["NEIGHBOR_DIST"] and b not in globe.killist]
+        # deprecated: we will not try do model the behaviour between prey groups T^T
+        # for comp in self.property["COMP_GROUP"]:
+        #    self.competitors = [c for c in comp if pygame.math.Vector2.length(c.position - self.position) < self.property["NEIGHBOR_DIST"] and c not in globe.killist]
         for enemy in self.property["ENEMY"]:
             self.enemies = [e for e in enemy if pygame.math.Vector2.length(e.position - self.position) < self.property["ENEMY_DIST"]]
 
@@ -80,7 +82,7 @@ class Boid_0(Sprite):
         # detect whether the boid itself has been hunted down
         for e in self.enemies:
             if pygame.math.Vector2.length(self.position - e.position) < 30:
-                self.property["THIS_GROUP"].remove(self)        # remove itself from the rendering list
+                globe.boids[self.flag].remove(self)        # remove itself from the rendering list
                 globe.killist.append(self)                      # remove itself from the enemie's hunting list
 
         # rotate the sprite image to its corresponding heading direction

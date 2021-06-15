@@ -16,7 +16,7 @@ class Enemy(Sprite):
         Method 'rule_bound": an location-transition helper responsible for keeping the agent inside the screen border.
         Method 'rule_catch": an location-transition helper responsible for modeling the 'catch-and-hunt' behaviour.
     """
-    def __init__(self, screen, properties):
+    def __init__(self, screen, properties, flag):
         super(Enemy, self).__init__()
         self.screen = screen
         self.property = properties
@@ -37,7 +37,7 @@ class Enemy(Sprite):
         """
         # scan to find any preys within the enemy's prey-detection distance
         for preys in self.property["PREYS"]:
-            tmp_preys = [b for b in preys if pygame.math.Vector2.length(b.position - self.position) < self.property["DETECT_DIST"]]
+            tmp_preys = [b for b in preys if pygame.math.Vector2.length(b.position - self.position) < self.property["DETECT_DIST"] and b not in globe.killist]
             self.preys.append(tmp_preys)
 
         # apply two helpers to modify the enemy's location in the next state

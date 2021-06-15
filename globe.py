@@ -18,19 +18,19 @@ enemies_property = []
 
 killist = []
 cache = {}
-RESOLUTION = [1280, 720]
+RESOLUTION = [800, 680]
 
 # generate the group lists' skeleton based on two fundamental attributes: NUM_BOIDS and NUM_ENEMIES
 for i in range(NUM_BOIDS):
-    boids.append(Group())
+    boids.append([])
 for i in range(NUM_ENEMIES):
-    enemies.append(Group())
+    enemies.append([])
 
 # The properties of each group must be specified
 boid0_property = {
     "RESOLUTION": RESOLUTION,
-    "SPRITE": "./Enemy_FishGreen.png",
-    "GROUP_SIZE": 40,
+    "SPRITE": "./asset/Enemy_FishGreen.png",
+    "GROUP_SIZE": 20,
     "MAX_SPEED": 6,
     "MAX_ACC": 0.9,
     "NEIGHBOR_DIST": 720 / 3,
@@ -42,8 +42,8 @@ boid0_property = {
 }
 boid1_property = {
     "RESOLUTION": RESOLUTION,
-    "SPRITE": "./Enemy_FishPink.png",
-    "GROUP_SIZE": 40,
+    "SPRITE": "./asset/Enemy_FishPink.png",
+    "GROUP_SIZE": 20,
     "MAX_SPEED": 6,
     "MAX_ACC": 0.9,
     "NEIGHBOR_DIST": 720 / 3,
@@ -55,7 +55,7 @@ boid1_property = {
 }
 enemy_property = {
     "RESOLUTION": RESOLUTION,
-    "SPRITE": "./Enemy_FishBlue.png",
+    "SPRITE": "./asset/Enemy_FishBlue.png",
     "GROUP_SIZE": 1,
     "MAX_SPEED": 6,
     "MAX_ACC": 2.9,
