@@ -62,7 +62,7 @@ class Enemy(Sprite):
         self.position += direction * abs_v
 
         # rotate the sprite image to its corresponding heading direction
-        self.angle = - 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180
+        self.angle = int(- 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180)
         if not globe.cache[self.property["SPRITE"]].__contains__(self.angle):  # cache the image if not found in self.cache to improve performance
             globe.cache[self.property["SPRITE"]].update({self.angle: pygame.transform.rotate(self.img, self.angle)})
 
@@ -115,13 +115,25 @@ class Enemy(Sprite):
 
         if nearest_prey:   # case1: prey found, head to the nearest prey and try to catch it
             self.v += (nearest_prey - self.position)/pygame.math.Vector2.length(nearest_prey - self.position) * 0.04
-        else:              # case0: no preys found, wander around
+
+        else:   # case0: : no preys found, wander around
             # check whether the enemy has moved close to the old point
             if pygame.math.Vector2.length(self.position - self.focus_point) <= 100:
                 # pick a new point if so
                 self.focus_point = randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])
             self.v += 0.02 * (Vector2(self.focus_point) - self.position)
 
-    # def rule_disperse(self):
-        # if len(self.preys_0) >= 10:
-        #     pass
+    def rule_disperse(self):
+        """
+        *DEPRECATED*
+        an location-transition helper responsible for modeling the 'enemy dispersed by large group of boids' behaviour.
+
+        Modeling Baseline:
+        The enemy will be dispersed by a large group of boids.
+        """
+        count = 0
+        for preys in self.preys:   # group of preys
+            for prey in preys:     # prey in each groups
+                if prey not in globe.killist:   # only consider the preys which haven't been killed
+                    count += 1
+        return count >= 30

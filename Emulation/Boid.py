@@ -50,7 +50,7 @@ class Boid_0(Sprite):
             self.enemies = [e for e in enemy if pygame.math.Vector2.length(e.position - self.position) < self.property["ENEMY_DIST"]]
 
         # apply several helpers to modify the boid's location in the next state
-        if not len(self.enemies):       # case: no enemies found
+        if not self.enemies:       # case: no enemies found
             self.rule1(self.neighbors)
             self.rule2(self.neighbors)
             self.rule3(self.neighbors)
@@ -84,10 +84,9 @@ class Boid_0(Sprite):
                 globe.killist.append(self)                      # remove itself from the enemie's hunting list
 
         # rotate the sprite image to its corresponding heading direction
-        self.angle = - 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180
+        self.angle = int(- 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180)
         if not globe.cache[self.property["SPRITE"]].__contains__(self.angle):     # cache the image if not found in self.cache to improve performance
             globe.cache[self.property["SPRITE"]].update({self.angle: pygame.transform.rotate(self.img, self.angle)})
-
         # finally, render the context to the screen
         # the second attribute is responsible for make sure the sprite rotate based on the correct center point. see:
         # https://www.cnblogs.com/yjmyzz/p/pygame-tutorial-9-image-rotate.html
@@ -141,7 +140,6 @@ class Boid_0(Sprite):
         """
         rule_2": an location-transition helper responsible for modeling the behavior which every boid tends to crowed out if the group is too intense.
         :param myneighbors: receive the list of its neighbors to check whether it's crowd or not.
-
         """
 
         if not myneighbors:     # case0: no neighbors in visual range
