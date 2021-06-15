@@ -5,6 +5,7 @@ from pygame_gui import UIManager
 from pygame_gui.elements import UIButton
 from pygame_gui.elements import UIWindow
 from pygame_gui.elements import UILabel
+from pygame_gui.elements import UITextEntryLine
 from pygame_gui.elements import UIDropDownMenu
 from Emulation.main_Emulation import Emulation
 Vector2 = pygame.math.Vector2
@@ -61,19 +62,24 @@ class Emulation_GUI:
                 if event.ui_element == self.settings_button:
                     self.settingsWindow = SettingsWindow(pygame.Rect((10, 10), (600, 420)), self.manager)
                     self.settings_button.disable()
-                if event.ui_element == self.settingsWindow.apply_button:
+                if self.settingsWindow and event.ui_element == self.settingsWindow.apply_button:
                     self.settingsWindow.kill()
                     print("applied!")
                     # handleParaModification()
-                    self.settings_button.enable()
 
             if event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                 if event.text == "Enemy Group 0":
                     self.settingsWindow.label_neibRange.set_text("Prey detection range     ")
+                    self.settingsWindow.entry_enemRange.disable()
                     self.settingsWindow.label_enemRange.disable()
                 else:
                     self.settingsWindow.label_neibRange.set_text("Neighbour detection range")
+                    self.settingsWindow.entry_enemRange.enable()
                     self.settingsWindow.label_enemRange.enable()
+
+            if event.user_type == pygame_gui.UI_WINDOW_CLOSE:
+                if event.ui_element == self.settingsWindow:
+                    self.settings_button.enable()
 
         self.manager.process_events(event)
 
@@ -110,16 +116,19 @@ class SettingsWindow(UIWindow):
                                                   ui_manager, container=self)
 
         self.label_groupSize = UILabel(pygame.Rect((32, 96), (200, 25)), "Size of the agent group  ", ui_manager, container=self)
-
-        # self.test_text_entry = UITextEntryLine(pygame.Rect((int(self.rect.width / 2), int(self.rect.height * 0.50)), (200, -1)), self.ui_manager, container=self)
+        self.entry_groupSize = UITextEntryLine(pygame.Rect((352, 96), (200, -1)), self.ui_manager, container=self)
 
         self.label_maxSpeed = UILabel(pygame.Rect((32, 139), (200, 25)), "Maximum velocity         ", ui_manager, container=self)
+        self.entry_maxSpeed = UITextEntryLine(pygame.Rect((352, 139), (200, -1)), self.ui_manager, container=self)
 
         self.label_maxAcc = UILabel(pygame.Rect((32, 182), (200, 25)), "Maximum acceleration rate", ui_manager, container=self)
+        self.entry_maxAcc = UITextEntryLine(pygame.Rect((352, 182), (200, -1)), self.ui_manager, container=self)
 
         self.label_neibRange = UILabel(pygame.Rect((32, 225), (200, 25)), "Neighbour detection range", ui_manager, container=self)
+        self.entry_neibRange = UITextEntryLine(pygame.Rect((352, 225), (200, -1)), self.ui_manager, container=self)
 
         self.label_enemRange = UILabel(pygame.Rect((32, 268), (200, 25)), "Preditor detection range ", ui_manager, container=self)
+        self.entry_enemRange = UITextEntryLine(pygame.Rect((352, 268), (200, -1)), self.ui_manager, container=self)
 
         self.apply_button = UIButton(pygame.Rect((352, 306), (200, 35)), text="Apply changes", manager=ui_manager, container=self)
 
