@@ -3,7 +3,7 @@ from pygame.sprite import *
 from random import *
 import math
 import globe
-
+import time
 
 class Enemy(Sprite):
     """
@@ -35,6 +35,7 @@ class Enemy(Sprite):
         """
         responsible for updating the current state of the enemy object.
         """
+        time_0 = time.clock()
         # scan to find any preys within the enemy's prey-detection distance
         for preys in self.property["PREYS"]:
             tmp_preys = [b for b in preys if pygame.math.Vector2.length(b.position - self.position) < self.property["DETECT_DIST"] and b not in globe.killist]
@@ -70,6 +71,7 @@ class Enemy(Sprite):
         # the second attribute is responsible for make sure the sprite rotate based on the correct center point. see:
         # https://www.cnblogs.com/yjmyzz/p/pygame-tutorial-9-image-rotate.html
         self.screen.blit(globe.cache[self.property["SPRITE"]][self.angle], globe.cache[self.property["SPRITE"]][self.angle].get_rect(center=self.position))
+        print(time.clock() - time_0)
 
     def rule_bound(self):
         """

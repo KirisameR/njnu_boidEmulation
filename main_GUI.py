@@ -12,6 +12,7 @@ Vector2 = pygame.math.Vector2
 
 SELECTION = 0
 
+
 class Emulation_GUI:
     def __init__(self):
         pygame.init()
@@ -51,7 +52,6 @@ class Emulation_GUI:
         if event.type == pygame.USEREVENT:
             if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.start_pause_button:
-                    print('Test button pressed')
                     if not self.isInitialized:
                         self.isInitialized = True
                         self.isRunning = True
@@ -61,10 +61,12 @@ class Emulation_GUI:
                     self.toBeTerminated = True
                 if event.ui_element == self.settings_button:
                     self.settingsWindow = SettingsWindow(pygame.Rect((10, 10), (600, 420)), self.manager)
+                    self.isRunning = False
                     self.settings_button.disable()
                 if self.settingsWindow and event.ui_element == self.settingsWindow.apply_button:
                     self.settingsWindow.kill()
                     print("applied!")
+                    self.emulation.initGroup()
                     # handleParaModification()
 
             if event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
@@ -78,6 +80,7 @@ class Emulation_GUI:
                     self.settingsWindow.label_enemRange.enable()
 
             if event.user_type == pygame_gui.UI_WINDOW_CLOSE:
+                self.isRunning = True
                 if event.ui_element == self.settingsWindow:
                     self.settings_button.enable()
 
@@ -107,7 +110,7 @@ class SettingsWindow(UIWindow):
         self.label_agent = UILabel(pygame.Rect((12, 38), (200, 25)), "Select agent groups", ui_manager, container=self)
 
         current_resolution_string = "Boid Group 0"
-        self.test_drop_down_menu = UIDropDownMenu(["Boid Group 0",
+        self.agentMenu = UIDropDownMenu(["Boid Group 0",
                                                    "Boid Group 1",
                                                    "Enemy Group 0",
                                                    ],
