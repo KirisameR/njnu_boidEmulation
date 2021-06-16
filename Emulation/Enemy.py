@@ -5,6 +5,7 @@ import math
 import globe
 import time
 
+
 class Enemy(Sprite):
     """
     DESCRIPTION:
@@ -27,7 +28,7 @@ class Enemy(Sprite):
         self.v = Vector2(math.cos(a), math.sin(a))
         self.a = 0
         self.preys = []
-        self.killist = []
+        self.all_preys = globe.boids
         self.angle = 0
         self.focus_point = [randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])]
 
@@ -37,8 +38,9 @@ class Enemy(Sprite):
         """
         time_0 = time.clock()
         # scan to find any preys within the enemy's prey-detection distance
-        for preys in self.property["PREYS"]:
-            tmp_preys = [b for b in preys if pygame.math.Vector2.length(b.position - self.position) < self.property["DETECT_DIST"] and b not in globe.killist]
+        self.preys = []
+        for preys in self.all_preys:
+            tmp_preys = [b for b in preys if pygame.math.Vector2.length(b.position - self.position) < self.property["DETECT_DIST"] and not b.isKilled]
             self.preys.append(tmp_preys)
 
         # apply two helpers to modify the enemy's location in the next state
@@ -110,10 +112,9 @@ class Enemy(Sprite):
         nearest_prey = Vector2()   # initialize the nearest prey to catch
         for preys in self.preys:   # group of preys
             for prey in preys:     # prey in each groups
-                if prey not in globe.killist:   # only consider the preys which haven't been killed
-                    if pygame.math.Vector2.length(prey.position - self.position) <= min_dist:   # select the nearest prey to hunt
-                        min_dist = pygame.math.Vector2.length(prey.position - self.position)
-                        nearest_prey = prey.position
+                if pygame.math.Vector2.length(prey.position - self.position) <= min_dist:   # select the nearest prey to hunt
+                    min_dist = pygame.math.Vector2.length(prey.position - self.position)
+                    nearest_prey = prey.position
 
         if nearest_prey:   # case1: prey found, head to the nearest prey and try to catch it
             self.v += (nearest_prey - self.position)/pygame.math.Vector2.length(nearest_prey - self.position) * 0.04

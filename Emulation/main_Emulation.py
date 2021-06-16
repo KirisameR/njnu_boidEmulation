@@ -24,6 +24,8 @@ class Emulation:
         self.scene = []
         self.bgcolor = (230, 230, 230)
         self.group_agents = []
+        self.boids = []
+        self.enemies = []
         self.clock = pygame.time.Clock()
 
     def initGroup(self):
@@ -40,6 +42,8 @@ class Emulation:
             for j in range(globe.enemies_property[i]["GROUP_SIZE"]):
                 globe.enemies[i].append(Enemy(self.screen, globe.enemies_property[i], i))
 
+        self.boids = globe.boids
+        self.enemies = globe.enemies
         self.group_agents = globe.boids + globe.enemies
         pygame.init()
 
@@ -67,13 +71,7 @@ class Emulation:
         responsible for updating the pygame subwindow responsible for emulation and loop to refresh the emulation state.
         """
         self.screen.fill(self.bgcolor)      # refresh the background color
-        count = 0
-        time_0 = time.time()
         for agents in self.group_agents:    # for every agents either in the boids group or enemy group, call their 'update' method for refreshing
             for agent in agents:
                 agent.update()
-                count += 1
-
-        print("total iteration: ", time.time() - time_0)
-        print("count: ", count)
         self.clock.tick(60)                 # lock refresh rate to 60fps

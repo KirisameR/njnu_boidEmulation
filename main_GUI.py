@@ -10,7 +10,7 @@ from pygame_gui.elements import UIDropDownMenu
 from Emulation.main_Emulation import Emulation
 Vector2 = pygame.math.Vector2
 
-SELECTION = 0
+SET_FLAG = 0
 
 
 class Emulation_GUI:
@@ -45,8 +45,11 @@ class Emulation_GUI:
         else:
             self.screen.blit(self.emu_surface, [20, 20])
 
+    def handleParaModification(self):
+        pass
+
     def handleEventProcessing(self, event):
-        global SELECTION
+        global SET_FLAG
         if event.type == pygame.QUIT:
             self.isRunning = False
         if event.type == pygame.USEREVENT:
@@ -65,12 +68,12 @@ class Emulation_GUI:
                     self.settings_button.disable()
                 if self.settingsWindow and event.ui_element == self.settingsWindow.apply_button:
                     self.settingsWindow.kill()
-                    print("applied!")
+                    self.handleParaModification()
                     self.emulation.initGroup()
-                    # handleParaModification()
 
             if event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                 if event.text == "Enemy Group 0":
+                    SET_FLAG = 2
                     self.settingsWindow.label_neibRange.set_text("Prey detection range     ")
                     self.settingsWindow.entry_enemRange.disable()
                     self.settingsWindow.label_enemRange.disable()
@@ -78,6 +81,10 @@ class Emulation_GUI:
                     self.settingsWindow.label_neibRange.set_text("Neighbour detection range")
                     self.settingsWindow.entry_enemRange.enable()
                     self.settingsWindow.label_enemRange.enable()
+                if event.text == "Boid Group 0":
+                    SET_FLAG = 0
+                if event.text == "Boid Group 1":
+                    SET_FLAG = 1
 
             if event.user_type == pygame_gui.UI_WINDOW_CLOSE:
                 self.isRunning = True

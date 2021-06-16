@@ -37,14 +37,16 @@ class Boid_0(Sprite):
         self.focus_point = [randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])]
         self.cache = {}
         self.flag = flag
+        self.isKilled = False
 
     def update(self):
         """
             responsible for updating the current state of the boid object.
         """
-
+        if self.isKilled:
+            return
         # scan the neighbors, competitors and enemies in visual range respectively
-        self.neighbors = [b for b in globe.boids[self.flag] if b != self and pygame.math.Vector2.length(b.position - self.position) < self.property["NEIGHBOR_DIST"] and b not in globe.killist]
+        self.neighbors = [b for b in globe.boids[self.flag] if b != self and pygame.math.Vector2.length(b.position - self.position) < self.property["NEIGHBOR_DIST"] and not b.isKilled]
         # deprecated: we will not try do model the behaviour between prey groups T^T
         # for comp in self.property["COMP_GROUP"]:
         #    self.competitors = [c for c in comp if pygame.math.Vector2.length(c.position - self.position) < self.property["NEIGHBOR_DIST"] and c not in globe.killist]
@@ -81,9 +83,9 @@ class Boid_0(Sprite):
 
         # detect whether the boid itself has been hunted down
         for e in self.enemies:
-            if pygame.math.Vector2.length(self.position - e.position) < 30:
+            if pygame.math.Vector2.length(self.position - e.position) < 20:
                 globe.boids[self.flag].remove(self)        # remove itself from the rendering list
-                globe.killist.append(self)                      # remove itself from the enemie's hunting list
+                self.isKilled = True                       # remove itself from the enemie's hunting list
 
         # rotate the sprite image to its corresponding heading direction
         self.angle = int(- 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180)
