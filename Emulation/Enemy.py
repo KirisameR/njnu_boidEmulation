@@ -37,7 +37,6 @@ class Enemy(Sprite):
         """
         responsible for updating the current state of the enemy object.
         """
-        time_0 = time.clock()
         # scan to find any preys within the enemy's prey-detection distance
         self.preys = []
         for preys in self.all_preys:

@@ -61,7 +61,6 @@ class Emulation:
                 for agent in agents:
                     agent.update()
 
-
             pygame.display.flip()               # apply the changes and re-render the screen context
             self.clock.tick(60)                      # lock refresh rate to 60fps
 

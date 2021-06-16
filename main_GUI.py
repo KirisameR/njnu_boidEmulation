@@ -97,11 +97,18 @@ class Emulation_GUI:
                 if event.ui_element == self.settings_button:        # settings button
                     self.settingsWindow = SettingsWindow(pygame.Rect((10, 10), (600, 420)), self.manager)
                     # and intialize entry context
-                    self.settingsWindow.entry_groupSize.set_text(str(self.settings["Boids"][SET_FLAG]["GROUP_SIZE"]))
-                    self.settingsWindow.entry_maxSpeed.set_text(str(self.settings["Boids"][SET_FLAG]["MAX_SPEED"]))
-                    self.settingsWindow.entry_maxAcc.set_text(str(self.settings["Boids"][SET_FLAG]["MAX_ACC"]))
-                    self.settingsWindow.entry_neibRange.set_text(str(float(self.settings["Boids"][SET_FLAG]["NEIGHBOR_DIST"])))
-                    self.settingsWindow.entry_enemRange.set_text(str(float(self.settings["Boids"][SET_FLAG]["ENEMY_DIST"])))
+                    if SET_FLAG == 0 or SET_FLAG == 1:
+                        self.settingsWindow.entry_groupSize.set_text(str(self.settings["Boids"][SET_FLAG]["GROUP_SIZE"]))
+                        self.settingsWindow.entry_maxSpeed.set_text(str(self.settings["Boids"][SET_FLAG]["MAX_SPEED"]))
+                        self.settingsWindow.entry_maxAcc.set_text(str(self.settings["Boids"][SET_FLAG]["MAX_ACC"]))
+                        self.settingsWindow.entry_neibRange.set_text(str(float(self.settings["Boids"][SET_FLAG]["NEIGHBOR_DIST"])))
+                        self.settingsWindow.entry_enemRange.set_text(str(float(self.settings["Boids"][SET_FLAG]["ENEMY_DIST"])))
+                    else:
+                        self.settingsWindow.entry_groupSize.set_text(str(self.settings["Enemy"]["GROUP_SIZE"]))
+                        self.settingsWindow.entry_maxSpeed.set_text(str(self.settings["Enemy"]["MAX_SPEED"]))
+                        self.settingsWindow.entry_maxAcc.set_text(str(self.settings["Enemy"]["MAX_ACC"]))
+                        self.settingsWindow.entry_neibRange.set_text(str(float(self.settings["Enemy"]["DETECT_DIST"])))
+                        self.settingsWindow.entry_enemRange.disable()
                     self.isRunning = False                          # pause emulation running when open settings
                     self.settings_button.disable()
                 if self.settingsWindow and event.ui_element == self.settingsWindow.apply_button:
