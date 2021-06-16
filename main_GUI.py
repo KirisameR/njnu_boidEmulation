@@ -106,10 +106,11 @@ class Emulation_GUI:
                     self.settings_button.disable()
                 if self.settingsWindow and event.ui_element == self.settingsWindow.apply_button:
                     self.settingsWindow.kill()                      # save any modified params if the user close the window using 'save' button
-                    self.handleParaModification()
+                    # self.handleParaModification()
                     globe.init()
+                    self.emu_surface = pygame.surface.Surface(globe.RESOLUTION)
                     self.emulation = Emulation(self.emu_surface, self.settings)
-                    self.emulation.initGroup(self.settings)  # initialize the emulation at the very beginning
+                    self.emulation.initGroup()  # initialize the emulation at the very beginning
                 if self.settingsWindow and event.ui_element == self.settingsWindow.save_button:
                     if SET_FLAG == 0 or SET_FLAG == 1:
                         tmp_properties = self.settings["Boids"][SET_FLAG]
@@ -166,7 +167,7 @@ class Emulation_GUI:
         responsible for refreshing the screen and keep the GUI interact with the user
         """
 
-        self.emulation.initGroup(self.settings)      # initialize the emulation at the very beginning
+        self.emulation.initGroup()      # initialize the emulation at the very beginning
         while not self.toBeTerminated:  # keep refreshing the screen in 60fps when not terminated
             time_delta = pygame.time.Clock().tick(60) / 1000.0
             self.gui_surface.fill((128, 128, 128))      # fill the background surface with a grey color

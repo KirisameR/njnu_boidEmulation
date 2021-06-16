@@ -75,10 +75,10 @@ def init():
     globe.RESOLUTION = [800, 680]
 
     # generate the group lists' skeleton based on two fundamental attributes: NUM_BOIDS and NUM_ENEMIES
-    for i in range(NUM_BOIDS):
-        boids.append([])
-    for i in range(NUM_ENEMIES):
-        enemies.append([])
+    for j in range(NUM_BOIDS):
+        globe.boids.append([])
+    for j in range(NUM_ENEMIES):
+        globe.enemies.append([])
 
     # The properties of each group must be specified
     globe.boid0_property = {

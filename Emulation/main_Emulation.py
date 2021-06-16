@@ -28,19 +28,19 @@ class Emulation:
         self.clock = pygame.time.Clock()
         self.settings = settings
 
-    def initGroup(self, settings):
+    def initGroup(self):
         """
          responsible for initialize the boids and enemies sprite groups
         """
         # globe.init()
         # create boid group(s) and the enemy group
         for i in range(globe.NUM_BOIDS):
-            for j in range(settings["Boids"][i]["GROUP_SIZE"]):
-                globe.boids[i].append(Boid_0(self.screen, settings["Boids"][i], i))
+            for j in range(self.settings["Boids"][i]["GROUP_SIZE"]):
+                globe.boids[i].append(Boid_0(self.screen, self.settings["Boids"][i], i))
 
         for i in range(globe.NUM_ENEMIES):
-            for j in range(settings["Enemy"]["GROUP_SIZE"]):
-                globe.enemies[i].append(Enemy(self.screen, settings["Enemy"], i))
+            for j in range(self.settings["Enemy"]["GROUP_SIZE"]):
+                globe.enemies[i].append(Enemy(self.screen, self.settings["Enemy"], i))
 
         self.boids = globe.boids
         self.enemies = globe.enemies
@@ -52,16 +52,15 @@ class Emulation:
          responsible for firing up the pygame window and loop to refresh the emulation state.
         """
         # call the group initialization function
-        self.initGroup(self.settings)
-
+        self.initGroup()
 
         # loop to refresh the emulation state
         while True:
             self.screen.fill(self.bgcolor)  # refresh the background color
             for agents in self.group_agents:    # for every agents either in the boids group or enemy group, call their 'update' method for refreshing
                 for agent in agents:
-                    if not agent.isKilled:
-                        agent.update()
+                    agent.update()
+
 
             pygame.display.flip()               # apply the changes and re-render the screen context
             self.clock.tick(60)                      # lock refresh rate to 60fps
