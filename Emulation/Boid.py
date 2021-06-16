@@ -44,6 +44,7 @@ class Boid_0(Sprite):
             responsible for updating the current state of the boid object.
         """
         if self.isKilled:
+            print("killed!")
             return
         # scan the neighbors, competitors and enemies in visual range respectively
         self.neighbors = [b for b in globe.boids[self.flag] if b != self and pygame.math.Vector2.length(b.position - self.position) < self.property["NEIGHBOR_DIST"] and not b.isKilled]
@@ -86,7 +87,7 @@ class Boid_0(Sprite):
             if pygame.math.Vector2.length(self.position - e.position) < 20:
                 globe.boids[self.flag].remove(self)        # remove itself from the rendering list
                 self.isKilled = True                       # remove itself from the enemie's hunting list
-
+                print("killed!!!!!!removed!!!")
         # rotate the sprite image to its corresponding heading direction
         self.angle = int(- 180 / 3.14 * math.atan2(delta[1], delta[0]) + 180)
         if not globe.cache[self.property["SPRITE"]].__contains__(self.angle):     # cache the image if not found in self.cache to improve performance

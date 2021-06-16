@@ -31,6 +31,7 @@ class Enemy(Sprite):
         self.all_preys = globe.boids
         self.angle = 0
         self.focus_point = [randrange(0, self.property["RESOLUTION"][0]), randrange(0, self.property["RESOLUTION"][1])]
+        self.isKilled = False
 
     def update(self):
         """
@@ -73,7 +74,6 @@ class Enemy(Sprite):
         # the second attribute is responsible for make sure the sprite rotate based on the correct center point. see:
         # https://www.cnblogs.com/yjmyzz/p/pygame-tutorial-9-image-rotate.html
         self.screen.blit(globe.cache[self.property["SPRITE"]][self.angle], globe.cache[self.property["SPRITE"]][self.angle].get_rect(center=self.position))
-        print(time.clock() - time_0)
 
     def rule_bound(self):
         """
